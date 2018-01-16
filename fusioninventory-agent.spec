@@ -10,7 +10,7 @@ License:     GPLv2+
 URL:         http://fusioninventory.org/
 
 Version:     2.4
-Release:     2%{?dist}
+Release:     3%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
 Source10:    %{name}.service
@@ -169,7 +169,11 @@ cat <<EOF | tee logrotate
 }
 EOF
 
-sed -e 's|#include "conf\.d/"|include "conf\.d/"|' -i etc/agent.cfg
+sed \
+    -e "s/logger = .*/logger = syslog/" \
+    -e "s/logfacility = .*/logfacility = LOG_DAEMON/" \
+    -e 's|#include "conf\.d/"|include "conf\.d/"|' \
+    -i etc/agent.cfg
 
 cat <<EOF | tee %{name}.conf
 #
@@ -316,6 +320,9 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 
 
 %changelog
+* Mon Jan 15 2018 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4-3
+- Change logging according to upstream recommandations
+
 * Thu Jan 11 2018 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4-2
 - Drop systemd override conf file, thits is no longer needed
 
