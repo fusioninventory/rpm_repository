@@ -9,8 +9,8 @@ Group:       Applications/System
 License:     GPLv2+
 URL:         http://fusioninventory.org/
 
-Version:     2.4
-Release:     3%{?dist}
+Version:     2.4.1
+Release:     1%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
 Source10:    %{name}.service
@@ -211,7 +211,8 @@ EOF
 perl Makefile.PL \
      PREFIX=%{_prefix} \
      SYSCONFDIR=%{_sysconfdir}/fusioninventory \
-     LOCALSTATEDIR=%{_localstatedir}/lib/%{name}
+     LOCALSTATEDIR=%{_localstatedir}/lib/%{name} \
+     VERSION=%{version}-%{release}
 
 make %{?_smp_mflags}
 
@@ -320,6 +321,9 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 
 
 %changelog
+* Tue Jul 03 2018 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4.1-1
+- Last upstream release
+
 * Mon Jan 15 2018 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4-3
 - Change logging according to upstream recommandations
 
