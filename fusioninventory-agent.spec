@@ -15,9 +15,7 @@ Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{vers
 Source1:     %{name}.cron
 Source10:    %{name}.service
 Patch0:      f950c7242660fa595f3877805d61d5fb05287bd3.patch
-%if 0%{?rhel}
 Patch1:      fix-timestamp-ping-error.patch
-%endif
 
 Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRequires: perl-generators
