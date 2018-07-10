@@ -10,10 +10,11 @@ License:     GPLv2+
 URL:         http://fusioninventory.org/
 
 Version:     2.4.1
-Release:     1%{?dist}
+Release:     2%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
 Source10:    %{name}.service
+Patch0:      f950c7242660fa595f3877805d61d5fb05287bd3.patch
 
 Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRequires: perl-generators
@@ -21,7 +22,6 @@ BuildRequires: perl(ExtUtils::MakeMaker)
 BuildRequires: systemd
 
 Requires:  perl-FusionInventory-Agent = %{version}-%{release}
-Requires:  logrotate
 Requires:  cronie
 %ifarch %{ix86} x86_64
 Requires:  dmidecode
@@ -159,15 +159,7 @@ fusioninventory cron task
 %prep
 %setup -q -n FusionInventory-Agent-%{version}
 
-cat <<EOF | tee logrotate
-%{_localstatedir}/log/%{name}/*.log {
-    weekly
-    rotate 7
-    compress
-    notifempty
-    missingok
-}
-EOF
+%patch0 -p1
 
 sed \
     -e "s/logger = .*/logger = syslog/" \
@@ -223,11 +215,10 @@ find %{buildroot} -type f -name .packlist -exec rm -f {} ';'
 
 %{_fixperms} %{buildroot}/*
 
-mkdir -p %{buildroot}%{_localstatedir}/{log,lib}/%{name}
+mkdir -p %{buildroot}%{_localstatedir}/lib/%{name}
 mkdir -p %{buildroot}%{_sysconfdir}/fusioninventory/conf.d
 mkdir -p %{buildroot}%{_sysconfdir}/systemd/system/%{name}.service.d
 
-install -m 644 -D  logrotate     %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
 install -m 644 -D  %{name}.conf  %{buildroot}%{_sysconfdir}/sysconfig/%{name}
 install -m 755 -Dp %{SOURCE1}    %{buildroot}%{_sysconfdir}/cron.hourly/%{name}
 install -m 644 -D  %{SOURCE10}   %{buildroot}%{_unitdir}/%{name}.service
@@ -253,7 +244,6 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 
 %files
 %dir %{_sysconfdir}/fusioninventory
-%config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
 %config(noreplace) %{_sysconfdir}/fusioninventory/agent.cfg
 %config(noreplace) %{_sysconfdir}/fusioninventory/conf.d
 %{_unitdir}/%{name}.service
@@ -262,7 +252,6 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 %{_bindir}/fusioninventory-injector
 %{_mandir}/man1/fusioninventory-agent*
 %{_mandir}/man1/fusioninventory-injector*
-%dir %{_localstatedir}/log/%{name}
 %dir %{_localstatedir}/lib/%{name}
 %dir %{_datadir}/fusioninventory
 %dir %{_datadir}/fusioninventory/lib
@@ -321,6 +310,10 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 
 
 %changelog
+* Tue Jul 10 2018 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4.1-2
+- Add upstream patch to fix wrong variable name
+- Logrotate is no longer needed since we now use syslog
+
 * Tue Jul 03 2018 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4.1-1
 - Last upstream release
 
