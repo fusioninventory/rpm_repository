@@ -10,11 +10,14 @@ License:     GPLv2+
 URL:         http://fusioninventory.org/
 
 Version:     2.4.1
-Release:     2%{?dist}
+Release:     3%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
 Source10:    %{name}.service
 Patch0:      f950c7242660fa595f3877805d61d5fb05287bd3.patch
+%if 0%{?rhel}
+Patch1:      fix-timestamp-ping-error.patch
+%endif
 
 Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRequires: perl-generators
@@ -160,6 +163,9 @@ fusioninventory cron task
 %setup -q -n FusionInventory-Agent-%{version}
 
 %patch0 -p1
+%if 0%{?rhel}
+%patch1 -p1
+%endif
 
 sed \
     -e "s/logger = .*/logger = syslog/" \
@@ -310,6 +316,9 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 
 
 %changelog
+* Tue Jul 10 2018 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4.1-3
+- Add patch for Net-Ping issue on EL versions
+
 * Tue Jul 10 2018 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4.1-2
 - Add upstream patch to fix wrong variable name
 - Logrotate is no longer needed since we now use syslog

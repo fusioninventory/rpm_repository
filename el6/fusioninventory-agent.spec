@@ -10,9 +10,11 @@ License:     GPLv2+
 URL:         http://fusioninventory.org/
 
 Version:     2.4.1
-Release:     1%{?dist}
+Release:     2%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
+Patch0:      f950c7242660fa595f3877805d61d5fb05287bd3.patch
+Patch1:      fix-timestamp-ping-error.patch
 
 Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRequires: perl-generators
@@ -159,6 +161,9 @@ fusioninventory cron task
 
 %prep
 %setup -q -n FusionInventory-Agent-%{version}
+
+%patch0 -p1
+%patch1 -p1
 
 sed -i contrib/unix/%{name}.init.redhat \
     -e "s/Default-Start: 3 5/Default-Start:/"
@@ -333,6 +338,10 @@ exit 0
 
 
 %changelog
+* Tue Jul 10 2018 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4.1-2
+- Add patch for Net-Ping issue on EL versions
+- Add upstream patch to fix wrong variable name
+-
 * Tue Jul 03 2018 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4.1-1
 - Last upstream release
 

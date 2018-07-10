@@ -1,0 +1,32 @@
+From f950c7242660fa595f3877805d61d5fb05287bd3 Mon Sep 17 00:00:00 2001
+From: Guillaume Bougard <gbougard@teclib.com>
+Date: Wed, 4 Jul 2018 13:44:38 +0200
+Subject: [PATCH] Fix type and wrong variable usage in new Scheduler target
+ only visible while using --lazy option from agent script
+
+---
+ lib/FusionInventory/Agent/Target/Scheduler.pm | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/FusionInventory/Agent/Target/Scheduler.pm b/lib/FusionInventory/Agent/Target/Scheduler.pm
+index 7c063725d0..beb271a1c6 100644
+--- a/lib/FusionInventory/Agent/Target/Scheduler.pm
++++ b/lib/FusionInventory/Agent/Target/Scheduler.pm
+@@ -16,7 +16,7 @@ sub new {
+     my $self = $class->SUPER::new(%params);
+ 
+     $self->{storage} = $params{storage};
+-    $self->{name}    = 'scheduler' . $count++,
++    $self->{id}      = 'scheduler' . $count++;
+ 
+     # handle persistent state
+     $self->_loadState();
+@@ -32,7 +32,7 @@ sub new {
+ sub getName {
+     my ($self) = @_;
+ 
+-    return $self->{name};
++    return $self->{id};
+ }
+ 
+ sub getType {
