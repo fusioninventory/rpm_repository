@@ -11,10 +11,12 @@
 
 [Unit]
 Description=FusionInventory agent
+Documentation=man:fusioninventory-agent
 After=syslog.target network.target
 
 [Service]
 ExecStart=/usr/bin/fusioninventory-agent --daemon --no-fork $OPTIONS
+ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
 WantedBy=multi-user.target
