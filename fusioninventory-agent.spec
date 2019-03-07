@@ -10,10 +10,13 @@ License:     GPLv2+
 URL:         http://fusioninventory.org/
 
 Version:     2.4.3
-Release:     1%{?dist}
+Release:     2%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
 Source10:    %{name}.service
+
+# Fix https://github.com/fusioninventory/fusioninventory-agent/issues/646
+Patch1:      fusioninventory-agent-httpd-server-not-listen.patch
 
 Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRequires: perl-generators
@@ -157,6 +160,7 @@ fusioninventory cron task
 
 %prep
 %setup -q -n FusionInventory-Agent-%{version}
+%patch1 -p1
 
 sed \
     -e "s/logger = .*/logger = syslog/" \
@@ -307,6 +311,9 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 
 
 %changelog
+* Thu Mar 07 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4.3-2
+- Fix for HTTPD server not listening
+
 * Mon Feb 25 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4.3-1
 - Last upstream release
 

@@ -1,0 +1,92 @@
+diff --git a/lib/FusionInventory/Agent/Daemon.pm b/lib/FusionInventory/Agent/Daemon.pm
+index f6e33d823..c550bee5e 100644
+--- a/lib/FusionInventory/Agent/Daemon.pm
++++ b/lib/FusionInventory/Agent/Daemon.pm
+@@ -279,6 +279,9 @@ sub createDaemon {
+     } elsif (my $pid = $daemon->Init()) {
+         $logger->debug("$PROVIDER Agent daemonized with PID $pid") if $logger;
+         exit 0;
++    } else {
++        # Reload the logger in forked process to avoid some related issues
++        $logger->reload();
+     }
+ 
+     # From here we can enable our pidfile deletion on terminate
+diff --git a/lib/FusionInventory/Agent/Logger.pm b/lib/FusionInventory/Agent/Logger.pm
+index 88a384a36..db7be31c6 100644
+--- a/lib/FusionInventory/Agent/Logger.pm
++++ b/lib/FusionInventory/Agent/Logger.pm
+@@ -92,6 +92,14 @@ sub _log {
+     }
+ }
+ 
++sub reload {
++    my ($self) = @_;
++
++    foreach my $backend (@{$self->{backends}}) {
++        $backend->reload();
++    }
++}
++
+ sub debug_level {
+     my ($self) = @_;
+ 
+diff --git a/lib/FusionInventory/Agent/Logger/Backend.pm b/lib/FusionInventory/Agent/Logger/Backend.pm
+index 541be26a6..eafa6efbf 100644
+--- a/lib/FusionInventory/Agent/Logger/Backend.pm
++++ b/lib/FusionInventory/Agent/Logger/Backend.pm
+@@ -3,6 +3,9 @@ package FusionInventory::Agent::Logger::Backend;
+ use strict;
+ use warnings;
+ 
++sub reload {
++}
++
+ 1;
+ __END__
+ 
+@@ -54,3 +57,7 @@ Can be one of:
+ =item I<message>
+ 
+ =back
++
++=head2 reload()
++
++Used to reload a logger
+diff --git a/lib/FusionInventory/Agent/Logger/Syslog.pm b/lib/FusionInventory/Agent/Logger/Syslog.pm
+index dc1a6ad4f..3b8d6738c 100644
+--- a/lib/FusionInventory/Agent/Logger/Syslog.pm
++++ b/lib/FusionInventory/Agent/Logger/Syslog.pm
+@@ -22,14 +22,12 @@ my $syslog_name = lc($FusionInventory::Agent::Version::PROVIDER)."-agent";
+ sub new {
+     my ($class, %params) = @_;
+ 
+-    my $self = {};
++    my $self = {
++        facility => $params{logfacility} || 'LOG_USER',
++    };
+     bless $self, $class;
+ 
+-    openlog($syslog_name, 'cons,pid', $params{logfacility} || 'LOG_USER');
+-
+-    # Fix agent not listening on http port issue when 'syslog' logger is
+-    # active and Sys::Syslog is too old. Problem seen on CentOS 6.10
+-    Sys::Syslog::setlogsock('unix') if $Sys::Syslog::VERSION < 0.28 ;
++    openlog($syslog_name, 'cons,pid', $self->{facility});
+ 
+     return $self;
+ }
+@@ -43,6 +41,13 @@ sub addMessage {
+     syslog($syslog_levels{$level}, $message);
+ }
+ 
++sub reload {
++    my ($self) = @_;
++
++    closelog();
++    openlog($syslog_name, 'cons,pid', $self->{facility});
++}
++
+ sub DESTROY {
+     closelog();
+ }
