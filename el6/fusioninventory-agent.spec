@@ -9,13 +9,12 @@ Group:       Applications/System
 License:     GPLv2+
 URL:         http://fusioninventory.org/
 
-Version:     2.4.3
-Release:     2%{?dist}
+Version:     2.5
+Release:     1%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
 
-# Fix https://github.com/fusioninventory/fusioninventory-agent/issues/646
-Patch1:      fusioninventory-agent-httpd-server-not-listen.patch
+Patch0:      fusioninventory-agent-7ae7c838b.patch
 
 Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRequires: perl-generators
@@ -59,7 +58,7 @@ You can add additional packages for optional tasks:
 * fusioninventory-agent-task-collect
     Custom information retrieval support
 * fusioninventory-agent-task-wakeonlan
-    not included due to a licensing issue for perl-Net-Write
+    Wake o lan task
 
 Edit the /etc/sysconfig/%{name} file for service configuration.
 
@@ -117,9 +116,6 @@ Requires:   perl(Archive::Extract)
 %description task-deploy
 This package provides software deployment support for FusionInventory-agent
 
-%if !%{defined perl_net_write}
-# Excluded due to the absence of perl-Net-Write
-# perl-Net-Write is licenced under Artistic Perl v1 licence, not accepted in Fedora
 %package task-wakeonlan
 Summary:    WakeOnLan task for FusionInventory
 Group:      Applications/System
@@ -128,7 +124,6 @@ Requires:   %{name} = %{version}-%{release}
 
 %description task-wakeonlan
 fusioninventory-task-wakeonlan
-%endif
 
 %package task-inventory
 Summary:    Inventory task for FusionInventory
@@ -162,10 +157,11 @@ fusioninventory cron task
 
 %prep
 %setup -q -n FusionInventory-Agent-%{version}
-%patch1 -p1
 
 sed -i contrib/unix/%{name}.init.redhat \
     -e "s/Default-Start: 3 5/Default-Start:/"
+
+%patch0 -p1
 
 cat <<EOF | tee logrotate
 %{_localstatedir}/log/%{name}/*.log {
@@ -272,6 +268,9 @@ exit 0
 %config(noreplace) %{_sysconfdir}/sysconfig/%{name}
 %config(noreplace) %{_sysconfdir}/fusioninventory/agent.cfg
 %config(noreplace) %{_sysconfdir}/fusioninventory/conf.d
+%config(noreplace) %{_sysconfdir}/fusioninventory/inventory-server-plugin.cfg
+%config(noreplace) %{_sysconfdir}/fusioninventory/server-test-plugin.cfg
+%config(noreplace) %{_sysconfdir}/fusioninventory/ssl-server-plugin.cfg
 %{_sysconfdir}/cron.hourly/%{name}
 %{_initrddir}/%{name}
 %{_bindir}/fusioninventory-agent
@@ -285,13 +284,12 @@ exit 0
 %dir %{_datadir}/fusioninventory/lib/FusionInventory
 %dir %{_datadir}/fusioninventory/lib/FusionInventory/Agent
 %dir %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task
-#excluding sub-packages files
-#%%exclude %%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/
-
 
 
 %files -n perl-FusionInventory-Agent
 %doc Changes LICENSE THANKS
+#excluding sub-packages files
+%exclude %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/*
 %{_datadir}/fusioninventory
 
 %files yum-plugin
@@ -316,15 +314,15 @@ exit 0
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/Deploy.pm
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/Deploy
 
-# Excluding task-wakeonlan
-#%%files task-wakeonlan
-%exclude %{_bindir}/fusioninventory-wakeonlan
-%exclude %{_mandir}/man1/fusioninventory-wakeonlan.1*
-%exclude %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/WakeOnLan.pm
+%files task-wakeonlan
+%{_bindir}/fusioninventory-wakeonlan
+%{_mandir}/man1/fusioninventory-wakeonlan.1*
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/WakeOnLan.pm
 
 %files task-inventory
 %{_bindir}/fusioninventory-inventory
-%{_mandir}/man1/fusioninventory-inventory.1*
+%{_bindir}/fusioninventory-remoteinventory
+%{_mandir}/man1/fusioninventory-*inventory.1*
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/Inventory.pm
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/Inventory
 
@@ -337,6 +335,12 @@ exit 0
 
 
 %changelog
+* Mon Apr 15 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5-1
+- Last upstream release
+- Tasks files were provided also in main perl package
+- Apply upstream minor fixes patch
+- task-wakeonlan is back (see https://github.com/fusioninventory/fusioninventory-agent/issues/495#issuecomment-435110369 about dependancy issue)
+
 * Thu Mar 07 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4.3-2
 - Fix for HTTPD server not listening
 
