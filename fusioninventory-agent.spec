@@ -10,7 +10,7 @@ License:     GPLv2+
 URL:         http://fusioninventory.org/
 
 Version:     2.5
-Release:     1%{?dist}
+Release:     2%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
 Source10:    %{name}.service
@@ -264,7 +264,7 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 %files -n perl-FusionInventory-Agent
 %doc Changes LICENSE THANKS
 #excluding sub-packages files
-%exclude %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/*
+#%%exclude %%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/*
 %{_datadir}/fusioninventory
 
 %files yum-plugin
@@ -310,6 +310,9 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 
 
 %changelog
+* Thu Apr 18 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5-2
+- Re-add tasks files in main perl package, to solve dependencies issues on package
+
 * Mon Apr 15 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5-1
 - Last upstream release
 - Tasks files were provided also in main perl package
