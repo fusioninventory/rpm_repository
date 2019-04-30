@@ -10,11 +10,13 @@ License:     GPLv2+
 URL:         http://fusioninventory.org/
 
 Version:     2.5
-Release:     2%{?dist}
+Release:     3%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
 
 Patch0:      fusioninventory-agent-7ae7c838b.patch
+Patch1:      fix-install-httpd-plugins-configs.patch
+Patch2:      fix-httpd-plugins-configs-folder.patch
 
 Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRequires: perl-generators
@@ -162,6 +164,8 @@ sed -i contrib/unix/%{name}.init.redhat \
     -e "s/Default-Start: 3 5/Default-Start:/"
 
 %patch0 -p1
+%patch1 -p1
+%patch2 -p1
 
 cat <<EOF | tee logrotate
 %{_localstatedir}/log/%{name}/*.log {
@@ -335,6 +339,9 @@ exit 0
 
 
 %changelog
+* Thu May 02 2019 Guillaume Bougard <gbougard AT teclib DOT com> - 2.5-3
+- Add patches to fix agent HTTP server plugins integration
+
 * Thu Apr 18 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5-2
 - Re-add tasks files in main perl package, to solve dependencies issues on package
 

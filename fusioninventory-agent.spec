@@ -10,11 +10,13 @@ License:     GPLv2+
 URL:         http://fusioninventory.org/
 
 Version:     2.5
-Release:     2%{?dist}
+Release:     3%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
 Source10:    %{name}.service
 Patch0:      fusioninventory-agent-7ae7c838b.patch
+Patch1:      fix-install-httpd-plugins-configs.patch
+Patch2:      fix-httpd-plugins-configs-folder.patch
 
 Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRequires: perl-generators
@@ -156,6 +158,8 @@ fusioninventory cron task
 %setup -q -n FusionInventory-Agent-%{version}
 
 %patch0 -p1
+%patch1 -p1
+%patch2 -p1
 
 
 sed \
@@ -310,6 +314,9 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 
 
 %changelog
+* Thu May 02 2019 Guillaume Bougard <gbougard AT teclib DOT com> - 2.5-3
+- Add patches to fix agent HTTP server plugins integration
+
 * Thu Apr 18 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5-2
 - Re-add tasks files in main perl package, to solve dependencies issues on package
 
