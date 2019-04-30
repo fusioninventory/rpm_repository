@@ -6,29 +6,10 @@ Subject: [PATCH] fix: Add few minor fixes
 * build: fix fusioninventory-remoteinventory was not installed
 * inventory: fix error message while starting fusioninventory-inventory script
 ---
- Changes                                     | 8 ++++++++
  Makefile.PL                                 | 1 +
  lib/FusionInventory/Agent/Task/Inventory.pm | 2 +-
- 3 files changed, 10 insertions(+), 1 deletion(-)
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/Changes b/Changes
-index 83be862d0d..36849904a7 100644
---- a/Changes
-+++ b/Changes
-@@ -1,5 +1,13 @@
- Revision history for FusionInventory agent
- 
-+2.5.1 not relased yet
-+
-+core:
-+* build: fix fusioninventory-remoteinventory was not installed
-+
-+inventory:
-+* fix error message while starting fusioninventory-inventory script
-+
- 2.5 Fri, 12 Apr 2019
- 
- core:
 diff --git a/Makefile.PL b/Makefile.PL
 index 38e6eebdca..71aae700c9 100644
 --- a/Makefile.PL
