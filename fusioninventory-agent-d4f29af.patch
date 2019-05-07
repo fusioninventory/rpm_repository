@@ -1,0 +1,23 @@
+From d4f29affa9c9b8e80ea53171570c6d70eab28027 Mon Sep 17 00:00:00 2001
+From: Guillaume Bougard <gbougard@teclib.com>
+Date: Tue, 7 May 2019 14:33:09 +0200
+Subject: [PATCH] fix: Keep HTTP Server SSL plugin sessions opened
+
+---
+ lib/FusionInventory/Agent/HTTP/Server/SSL.pm | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/lib/FusionInventory/Agent/HTTP/Server/SSL.pm b/lib/FusionInventory/Agent/HTTP/Server/SSL.pm
+index f6238104a5..32442ec2cc 100644
+--- a/lib/FusionInventory/Agent/HTTP/Server/SSL.pm
++++ b/lib/FusionInventory/Agent/HTTP/Server/SSL.pm
+@@ -139,6 +139,9 @@ sub new {
+         return;
+     }
+ 
++    # Disable Timeout to leave SSL session opened until we get data
++    $client->timeout(0);
++
+     $plugin->debug("HTTPD started new SSL session");
+ 
+     bless $client, $class;

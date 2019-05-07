@@ -10,13 +10,14 @@ License:     GPLv2+
 URL:         http://fusioninventory.org/
 
 Version:     2.5
-Release:     3%{?dist}
+Release:     4%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
 
 Patch0:      fusioninventory-agent-7ae7c838b.patch
 Patch1:      fix-install-httpd-plugins-configs.patch
 Patch2:      fix-httpd-plugins-configs-folder.patch
+Patch3:      fusioninventory-agent-d4f29af.patch
 
 Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRequires: perl-generators
@@ -166,6 +167,7 @@ sed -i contrib/unix/%{name}.init.redhat \
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 
 cat <<EOF | tee logrotate
 %{_localstatedir}/log/%{name}/*.log {
@@ -339,6 +341,9 @@ exit 0
 
 
 %changelog
+* Tue May 07 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5-4
+- Add patch to fix SSL on with http modules
+
 * Thu May 02 2019 Guillaume Bougard <gbougard AT teclib DOT com> - 2.5-3
 - Add patches to fix agent HTTP server plugins integration
 
