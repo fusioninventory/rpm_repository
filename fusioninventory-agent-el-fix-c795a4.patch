@@ -1,0 +1,110 @@
+From c795a4ef37a0e8aad73740a8d4eaca934d636bfe Mon Sep 17 00:00:00 2001
+From: Guillaume Bougard <gbougard@teclib.com>
+Date: Mon, 15 Jul 2019 17:22:35 +0200
+Subject: [PATCH] fix: try to avoid sharing client with threads
+
+This fixes an issue when agent uses SSL connection with old openssl support,
+like on Redhat/CentOS 7.
+---
+ lib/FusionInventory/Agent/Task/NetDiscovery.pm | 16 +++++++++++++---
+ lib/FusionInventory/Agent/Task/NetInventory.pm | 11 ++++++++---
+ 2 files changed, 21 insertions(+), 6 deletions(-)
+
+diff --git a/lib/FusionInventory/Agent/Task/NetDiscovery.pm b/lib/FusionInventory/Agent/Task/NetDiscovery.pm
+index c12c9f201f..29a2984e96 100644
+--- a/lib/FusionInventory/Agent/Task/NetDiscovery.pm
++++ b/lib/FusionInventory/Agent/Task/NetDiscovery.pm
+@@ -27,6 +27,8 @@ use FusionInventory::Agent::Task::NetDiscovery::Job;
+ 
+ our $VERSION = FusionInventory::Agent::Task::NetDiscovery::Version::VERSION;
+ 
++my $client_params;
++
+ sub isEnabled {
+     my ($self, $response) = @_;
+ 
+@@ -135,8 +137,8 @@ sub _discovery_thread {
+ sub run {
+     my ($self, %params) = @_;
+ 
+-    # task-specific client, if needed
+-    $self->{client} = FusionInventory::Agent::HTTP::Client::OCS->new(
++    # Prepare client configuration in needed to send message to server
++    $client_params = {
+         logger       => $self->{logger},
+         user         => $params{user},
+         password     => $params{password},
+@@ -145,7 +147,7 @@ sub run {
+         ca_cert_dir  => $params{ca_cert_dir},
+         no_ssl_check => $params{no_ssl_check},
+         no_compress  => $params{no_compress},
+-    ) if !$self->{client};
++    } if !$self->{client};
+ 
+     # check discovery methods available
+     if (canRun('arp')) {
+@@ -249,6 +251,10 @@ sub run {
+         $self->_sendBlockMessage($pid, $size);
+     }
+ 
++    # Don't keep client until we created threads to avoid segfault if SSL is used
++    # we older openssl libs, but only if it is still not set by a script
++    delete $self->{client} if $client_params;
++
+     # Define a realistic block scan expiration : at least one minute by address
+     setExpirationTime( timeout => $max_count * 60 );
+     my $expiration = getExpirationTime();
+@@ -388,6 +394,10 @@ sub _sendMessage {
+         content  => $content
+     );
+ 
++    # task-specific client, if needed
++    $self->{client} = FusionInventory::Agent::HTTP::Client::OCS->new(%{$client_params})
++        if !$self->{client};
++
+     $self->{client}->send(
+         url     => $self->{target}->getUrl(),
+         message => $message
+diff --git a/lib/FusionInventory/Agent/Task/NetInventory.pm b/lib/FusionInventory/Agent/Task/NetInventory.pm
+index 5fa78edf93..dfd26bead3 100644
+--- a/lib/FusionInventory/Agent/Task/NetInventory.pm
++++ b/lib/FusionInventory/Agent/Task/NetInventory.pm
+@@ -26,6 +26,7 @@ our $VERSION = FusionInventory::Agent::Task::NetInventory::Version::VERSION;
+ # list of devices properties, indexed by XML element name
+ # the link to a specific OID is made by the model
+ 
++my $client_params;
+ 
+ sub isEnabled {
+     my ($self, $response) = @_;
+@@ -135,8 +136,8 @@ sub _inventory_thread {
+ sub run {
+     my ($self, %params) = @_;
+ 
+-    # task-specific client, if needed
+-    $self->{client} = FusionInventory::Agent::HTTP::Client::OCS->new(
++    # Prepare client configuration in needed to send message to server
++    $client_params = {
+         logger       => $self->{logger},
+         user         => $params{user},
+         password     => $params{password},
+@@ -145,7 +146,7 @@ sub run {
+         ca_cert_dir  => $params{ca_cert_dir},
+         no_ssl_check => $params{no_ssl_check},
+         no_compress  => $params{no_compress},
+-    ) if !$self->{client};
++    } if !$self->{client};
+ 
+     # Extract greatest max_threads from jobs
+     my ($max_threads) = sort { $b <=> $a } map { int($_->max_threads()) }
+@@ -331,6 +332,10 @@ sub _sendMessage {
+        content  => $content
+    );
+ 
++    # task-specific client, if needed
++    $self->{client} = FusionInventory::Agent::HTTP::Client::OCS->new(%{$client_params})
++        if !$self->{client};
++
+    $self->{client}->send(
+        url     => $self->{target}->getUrl(),
+        message => $message

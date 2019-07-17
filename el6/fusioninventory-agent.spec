@@ -10,9 +10,10 @@ License:     GPLv2+
 URL:         http://fusioninventory.org/
 
 Version:     2.5.1
-Release:     1%{?dist}
+Release:     2%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
+Patch0:      fusioninventory-agent-el-fix-c795a4.patch
 
 
 Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
@@ -156,6 +157,8 @@ fusioninventory cron task
 
 %prep
 %setup -q -n FusionInventory-Agent-%{version}
+
+%patch0 -p1
 
 sed -i contrib/unix/%{name}.init.redhat \
     -e "s/Default-Start: 3 5/Default-Start:/"
@@ -332,6 +335,9 @@ exit 0
 
 
 %changelog
+* Tue Jul 16 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5.1-2
+- Apply upstream patch that fixes issues on EL6/7
+
 * Mon Jul 08 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5.1-1
 - Last upstream release
 - Remove patches applied upstream
