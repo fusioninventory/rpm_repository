@@ -9,12 +9,11 @@ Group:       Applications/System
 License:     GPLv2+
 URL:         http://fusioninventory.org/
 
-Version:     2.5.1
-Release:     2%{?dist}
+Version:     2.5.2
+Release:     1%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
 Source10:    %{name}.service
-Patch0:      fusioninventory-agent-el-fix-c795a4.patch
 
 Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRequires: perl-generators
@@ -154,8 +153,6 @@ fusioninventory cron task
 
 %prep
 %setup -q -n FusionInventory-Agent-%{version}
-
-%patch0 -p1
 
 sed \
     -e "s/logger = .*/logger = syslog/" \
@@ -309,6 +306,10 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 
 
 %changelog
+* Tue Dec 17 2019 Johan Cwiklinski jcwiklinski AT teclib DOT com> - 2.5.2-1
+- Last upstream release
+- Drop patch applied upstream
+
 * Tue Jul 16 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5.1-2
 - Apply upstream patch that fixes issues on EL6/7
 
