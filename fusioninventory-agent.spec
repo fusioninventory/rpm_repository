@@ -242,6 +242,8 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 %config(noreplace) %{_sysconfdir}/fusioninventory/inventory-server-plugin.cfg
 %config(noreplace) %{_sysconfdir}/fusioninventory/server-test-plugin.cfg
 %config(noreplace) %{_sysconfdir}/fusioninventory/ssl-server-plugin.cfg
+%config(noreplace) %{_sysconfdir}/fusioninventory/proxy-server-plugin.cfg
+%config(noreplace) %{_sysconfdir}/fusioninventory/proxy2-server-plugin.cfg
 
 %{_unitdir}/%{name}.service
 %dir %{_sysconfdir}/systemd/system/%{name}.service.d
@@ -309,6 +311,7 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 * Tue Dec 17 2019 Johan Cwiklinski jcwiklinski AT teclib DOT com> - 2.5.2-1
 - Last upstream release
 - Drop patch applied upstream
+- Add missing configuration files
 
 * Tue Jul 16 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5.1-2
 - Apply upstream patch that fixes issues on EL6/7
