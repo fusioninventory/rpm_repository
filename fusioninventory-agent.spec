@@ -255,9 +255,6 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 %dir %{_datadir}/fusioninventory/lib/FusionInventory/Agent
 %dir %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task
 
-#%%exclude %%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/*
-#%%{_datadir}/fusioninventory
-
 %{_datadir}/fusioninventory/*.ids
 %{_datadir}/fusioninventory/html
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent.pm
@@ -294,7 +291,6 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Virtualization.pm
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Version.pm
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/XML/
-
 
 %files yum-plugin
 %config(noreplace) %{_sysconfdir}/yum/pluginconf.d/%{name}.conf
