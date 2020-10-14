@@ -10,7 +10,7 @@ License:     GPLv2+
 URL:         http://fusioninventory.org/
 
 Version:     2.5.2
-Release:     1%{?dist}
+Release:     2%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
 Source10:    %{name}.service
@@ -20,7 +20,12 @@ BuildRequires: perl-generators
 BuildRequires: perl(ExtUtils::MakeMaker)
 BuildRequires: systemd
 
-Requires:  perl-FusionInventory-Agent = %{version}-%{release}
+Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
+Requires:       perl(LWP)
+Requires:       perl(Net::CUPS)
+Requires:       perl(Net::SSLeay)
+Requires:       perl(Proc::Daemon)
+Requires:       perl(Socket::GetAddrInfo)
 Requires:  cronie
 %ifarch %{ix86} x86_64
 Requires:  dmidecode
@@ -57,21 +62,8 @@ You can add additional packages for optional tasks:
 * fusioninventory-agent-task-collect
     Custom information retrieval support
 * fusioninventory-agent-task-wakeonlan
-    Wake o lan task
+    Wake on lan task
 
-
-%package -n perl-FusionInventory-Agent
-Summary:        Libraries for Fusioninventory agent
-BuildArch:      noarch
-Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
-Requires:       perl(LWP)
-Requires:       perl(Net::CUPS)
-Requires:       perl(Net::SSLeay)
-Requires:       perl(Proc::Daemon)
-Requires:       perl(Socket::GetAddrInfo)
-
-%description -n perl-FusionInventory-Agent
-Libraries for Fusioninventory agent.
 
 %package task-esx
 Summary:    FusionInventory plugin to inventory vCenter/ESX/ESXi
@@ -153,6 +145,9 @@ fusioninventory cron task
 
 %prep
 %setup -q -n FusionInventory-Agent-%{version}
+
+find lib/FusionInventory -name *Win32* -exec rm -f {} ';'
+rm -rf lib/FusionInventory/Agent/Tools/Win32/
 
 sed \
     -e "s/logger = .*/logger = syslog/" \
@@ -236,6 +231,8 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 
 
 %files
+%doc Changes LICENSE THANKS
+
 %dir %{_sysconfdir}/fusioninventory
 %config(noreplace) %{_sysconfdir}/fusioninventory/agent.cfg
 %config(noreplace) %{_sysconfdir}/fusioninventory/conf.d
@@ -258,12 +255,46 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 %dir %{_datadir}/fusioninventory/lib/FusionInventory/Agent
 %dir %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task
 
-
-%files -n perl-FusionInventory-Agent
-%doc Changes LICENSE THANKS
-#excluding sub-packages files
 #%%exclude %%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/*
-%{_datadir}/fusioninventory
+#%%{_datadir}/fusioninventory
+
+%{_datadir}/fusioninventory/*.ids
+%{_datadir}/fusioninventory/html
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Config.pm
+%{_datadir}/fusioninventory/lib/setup.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Daemon.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/HTTP/
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Inventory.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Logger*
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Storage.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Target*
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/Maintenance*
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/NetDiscovery/
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/WMI*
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/AIX.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/BSD.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Batteries.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Constants.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Expiration.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Generic.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/HPUX.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Hostname.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/License.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Linux.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/MacOS.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Network.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/PowerSupplies.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Screen*
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Solaris.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Standards/MobileCountryCode.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Unix.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Virtualization.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Version.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/XML/
+
 
 %files yum-plugin
 %config(noreplace) %{_sysconfdir}/yum/pluginconf.d/%{name}.conf
@@ -272,7 +303,7 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 %files task-esx
 %{_bindir}/fusioninventory-esx
 %{_mandir}/man1/fusioninventory-esx.1*
-%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/ESX.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/ESX*
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/SOAP
 
 %files task-network
@@ -280,8 +311,12 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 %{_bindir}/fusioninventory-netinventory
 %{_mandir}/man1/fusioninventory-netdiscovery.1*
 %{_mandir}/man1/fusioninventory-netinventory.1*
-%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/NetDiscovery.pm
-%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/NetInventory.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/NetDiscovery*
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/NetInventory*
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/SNMP.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/SNMP*
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Hardware*
+
 
 %files task-deploy
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/Deploy.pm
@@ -290,7 +325,7 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 %files task-wakeonlan
 %{_bindir}/fusioninventory-wakeonlan
 %{_mandir}/man1/fusioninventory-wakeonlan.1*
-%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/WakeOnLan.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/WakeOnLan*
 
 %files task-inventory
 %{_bindir}/fusioninventory-inventory
@@ -300,7 +335,7 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/Inventory
 
 %files task-collect
-%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/Collect.pm
+%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/Collect*
 
 %files cron
 %{_sysconfdir}/cron.hourly/%{name}
@@ -308,7 +343,11 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 
 
 %changelog
-* Tue Dec 17 2019 Johan Cwiklinski jcwiklinski AT teclib DOT com> - 2.5.2-1
+* Wed Oct 14 2020 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5.2-2
+- drop sub-package perl-FusionInventory-Agent
+- do not include sub packages files in main package
+
+* Tue Dec 17 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5.2-1
 - Last upstream release
 - Drop patch applied upstream
 - Add missing configuration files
@@ -333,7 +372,7 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 - Last upstream release
 - Tasks files were provided also in main perl package
 - Apply upstream minor fixes patch
-- task-wakeonlan is back (see https://github.com/fusioninventory/fusioninventory-agent/issues/495#issuecomment-435110369 about dependancy issue)
+- task-wakeonlan is back (see https://github.com/fusioninventory/fusioninventory-agent/issues/495#issuecomment-435110369 about dependency issue)
 
 * Thu Mar 07 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.4.3-2
 - Fix for HTTPD server not listening
