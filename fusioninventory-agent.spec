@@ -15,6 +15,9 @@ Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{vers
 Source1:     %{name}.cron
 Source10:    %{name}.service
 
+Obsoletes:   perl-FusionInventory-Agent <= %{version}
+Provides:    perl-FusionInventory-Agent = %{version}
+
 Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRequires: perl-generators
 BuildRequires: perl(ExtUtils::MakeMaker)
