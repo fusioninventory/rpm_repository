@@ -15,8 +15,10 @@ Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{vers
 Source1:     %{name}.cron
 Source10:    %{name}.service
 
-Obsoletes:   perl-FusionInventory-Agent <= %{version}
-Provides:    perl-FusionInventory-Agent = %{version}
+Obsoletes:   perl-FusionInventory-Agent <= 2.5.2-1
+Provides:    perl-FusionInventory-Agent = %{version}-%{release}
+Obsoletes:   %{name}-yum-plugin <= 2.5.2-1
+Obsoletes:   %{name}-task-inventory <= 2.5.2-1
 
 Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildRequires: perl-generators
@@ -29,7 +31,6 @@ Requires:       perl(Net::CUPS)
 Requires:       perl(Net::SSLeay)
 Requires:       perl(Proc::Daemon)
 Requires:       perl(Socket::GetAddrInfo)
-Requires:  cronie
 %ifarch %{ix86} x86_64
 Requires:  dmidecode
 %endif
@@ -77,19 +78,6 @@ Requires:   %{name} = %{version}-%{release}
 fusioninventory-agent-task-ESX ask the running service agent to inventory an 
 VMWare vCenter/ESX/ESXi server through SOAP interface
 
-%package yum-plugin
-Summary:       Ask FusionInventory agent to send an inventory when yum exits
-Group:         System Environment/Base
-BuildArch:     noarch
-Requires:      yum
-Requires:      %{name}
-
-%description yum-plugin
-fusioninventory-agent-yum-plugin asks the running service agent to send an
-inventory when yum exits.
-
-This requires the service to be running with the --rpc-trust-localhost option.
-
 %package task-network
 Summary:    NetDiscovery and NetInventory task for FusionInventory
 Group:      Applications/System
@@ -116,7 +104,7 @@ BuildArch:  noarch
 Requires:   %{name} = %{version}-%{release}
 
 %description task-wakeonlan
-fusioninventory-task-wakeonlan
+WakeOnLan task for FusionInventory
 
 %package task-inventory
 Summary:    Inventory task for FusionInventory
@@ -126,7 +114,7 @@ Requires:   perl(Net::CUPS)
 Requires:   perl(Parse::EDID)
 
 %description task-inventory
-fusioninventory-task-inventory
+Inventory task for FusionInventory
 
 %package task-collect
 Summary:    Custom information retrieval support for FusionInventory agent
@@ -140,10 +128,11 @@ FusionInventory agent
 %package cron
 Summary:    Cron for FusionInventory agent
 Group:      Applications/System
+Requires:   cron
 Requires:   %{name} = %{version}-%{release}
 
 %description cron
-fusioninventory cron task
+Cron task for Fusioninventory agent
 
 
 %prep
@@ -151,6 +140,7 @@ fusioninventory cron task
 
 find lib/FusionInventory -name *Win32* -exec rm -f {} ';'
 rm -rf lib/FusionInventory/Agent/Tools/Win32/
+rm -rf lib/FusionInventory/Agent/Task/WMI*
 
 sed \
     -e "s/logger = .*/logger = syslog/" \
@@ -169,7 +159,7 @@ cat <<EOF | tee %{name}.conf
 #
 # Add tools directory if needed (tw_cli, hpacucli, ipssend, ...)
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
-# Global options (debug for verbose log, rpc-trust-localhost for yum-plugin)
+# Global options (debug for verbose log)
 OPTIONS="--debug "
 
 # Mode, change to "cron" to activate
@@ -214,9 +204,6 @@ install -m 644 -D  %{name}.conf  %{buildroot}%{_sysconfdir}/sysconfig/%{name}
 install -m 755 -Dp %{SOURCE1}    %{buildroot}%{_sysconfdir}/cron.hourly/%{name}
 install -m 644 -D  %{SOURCE10}   %{buildroot}%{_unitdir}/%{name}.service
 
-# Yum plugin installation
-install -m 644 -D contrib/yum-plugin/%{name}.py   %{buildroot}%{_prefix}/lib/yum-plugins/%{name}.py
-install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum/pluginconf.d/%{name}.conf
 
 %check
 #make test
@@ -271,8 +258,6 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Target*
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task.pm
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/Maintenance*
-%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/NetDiscovery/
-%{_datadir}/fusioninventory/lib/FusionInventory/Agent/Task/WMI*
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools.pm
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/AIX.pm
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/BSD.pm
@@ -294,10 +279,6 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Tools/Virtualization.pm
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/Version.pm
 %{_datadir}/fusioninventory/lib/FusionInventory/Agent/XML/
-
-%files yum-plugin
-%config(noreplace) %{_sysconfdir}/yum/pluginconf.d/%{name}.conf
-%{_prefix}/lib/yum-plugins/%{name}.*
 
 %files task-esx
 %{_bindir}/fusioninventory-esx
@@ -344,6 +325,7 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 %changelog
 * Wed Oct 14 2020 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5.2-2
 - drop sub-package perl-FusionInventory-Agent
+- drop sub-package yum-plugin
 - do not include sub packages files in main package
 
 * Tue Dec 17 2019 Johan Cwiklinski <jcwiklinski AT teclib DOT com> - 2.5.2-1
