@@ -9,7 +9,7 @@ Group:       Applications/System
 License:     GPLv2+
 URL:         http://fusioninventory.org/
 
-Version:     2.5.2
+Version:     2.6
 Release:     1%{?dist}
 Source0:     https://github.com/fusioninventory/%{name}/releases/download/%{version}/FusionInventory-Agent-%{version}.tar.gz
 Source1:     %{name}.cron
@@ -308,6 +308,9 @@ install -m 644 -D contrib/yum-plugin/%{name}.conf %{buildroot}%{_sysconfdir}/yum
 
 
 %changelog
+* Tue Dec 01 2020 Johan Cwiklinski jcwiklinski AT teclib DOT com> - 2.6-1
+- Last upstream reelase
+
 * Tue Dec 17 2019 Johan Cwiklinski jcwiklinski AT teclib DOT com> - 2.5.2-1
 - Last upstream release
 - Drop patch applied upstream
