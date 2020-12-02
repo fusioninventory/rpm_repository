@@ -1,5 +1,5 @@
 # rpm_repository
-Fedora &amp; RHEL source fles for copr repository https://copr.fedorainfracloud.org/coprs/trasher/fusioninventory-agent/
+Fedora &amp; RHEL source files for copr repository https://copr.fedorainfracloud.org/coprs/trasher/fusioninventory-agent/
 
 This is a backport for new versions on old distributions from the official package from:
 https://src.fedoraproject.org/rpms/fusioninventory-agent
